@@ -12,6 +12,8 @@
 Menu, Tray, Icon, %A_ScriptDir%\LOGO.ico
 Menu, Tray, NoStandard ;不显示默认的AHK右键菜单
 Menu, Tray, Add, 使用教程, 使用教程 ;添加新的右键菜单
+Menu, Tray, Add, 上下反向, 上下反向 ;添加新的右键菜单
+Menu, Tray, Add, 左右反向, 左右反向 ;添加新的右键菜单
 Menu, Tray, Add, 自动切换, 自动切换 ;添加新的右键菜单
 Menu, Tray, Add, 开机自启, 开机自启 ;添加新的右键菜单
 Menu, Tray, Add
@@ -40,11 +42,25 @@ else
 IfExist, %A_ScriptDir%\摇杆设置.ini ;如果配置文件存在则读取
 {
   IniRead, 自动切换, 摇杆设置.ini, 设置, 自动切换
+  IniRead, 上下反向, 摇杆设置.ini, 设置, 上下反向
+  if (上下反向)
+  {
+    Menu, Tray, Check, 上下反向 ;右键菜单打勾
+  }
+  IniRead, 左右反向, 摇杆设置.ini, 设置, 左右反向
+  if (左右反向)
+  {
+    Menu, Tray, Check, 左右反向 ;右键菜单打勾
+  }
 }
 else
 {
   自动切换:=0
   IniWrite, %自动切换%, 摇杆设置.ini, 设置, 自动切换
+  上下反向:=0
+  IniWrite, %上下反向%, 摇杆设置.ini, 设置, 上下反向
+  左右反向:=0
+  IniWrite, %左右反向%, 摇杆设置.ini, 设置, 左右反向
 }
 
 PgUp & PgDn::Reload
@@ -88,6 +104,40 @@ else ;开启开机自启动
   
   autostart:=1
   Menu, Tray, Check, 开机自启 ;右键菜单打勾
+}
+Critical, Off
+return
+
+上下反向:
+Critical, On
+if (上下反向=1)
+{
+  上下反向:=0
+  Menu, Tray, UnCheck, 上下反向 ;右键菜单不打勾
+  IniWrite, %上下反向%, 摇杆设置.ini, 设置, 上下反向
+}
+else ;开启开机自启动
+{
+  上下反向:=1
+  Menu, Tray, Check, 上下反向 ;右键菜单打勾
+  IniWrite, %上下反向%, 摇杆设置.ini, 设置, 上下反向
+}
+Critical, Off
+return
+
+左右反向:
+Critical, On
+if (左右反向=1)
+{
+  左右反向:=0
+  Menu, Tray, UnCheck, 左右反向 ;右键菜单不打勾
+  IniWrite, %左右反向%, 摇杆设置.ini, 设置, 左右反向
+}
+else ;开启开机自启动
+{
+  左右反向:=1
+  Menu, Tray, Check, 左右反向 ;右键菜单打勾
+  IniWrite, %左右反向%, 摇杆设置.ini, 设置, 左右反向
 }
 Critical, Off
 return
@@ -209,11 +259,25 @@ loop
 {
   if GetKeyState("A", "P") and !GetKeyState("D", "P")
   {
-    方向X:=-2
+    if (左右反向=1)
+    {
+      方向X:=2
+    }
+    else
+    {
+      方向X:=-2
+    }
   }
   else if GetKeyState("D", "P") and !GetKeyState("A", "P")
   {
-    方向X:=2
+    if (左右反向=1)
+    {
+      方向X:=-2
+    }
+    else
+    {
+      方向X:=2
+    }
   }
   else if GetKeyState("A", "P") and GetKeyState("D", "P")
   {
@@ -226,11 +290,25 @@ loop
   
   if GetKeyState("W", "P") and !GetKeyState("S", "P")
   {
-    方向Y:=-2
+    if (上下反向=1)
+    {
+      方向Y:=2
+    }
+    else
+    {
+      方向Y:=-2
+    }
   }
   else if GetKeyState("S", "P") and !GetKeyState("W", "P")
   {
-    方向Y:=2
+    if (上下反向=1)
+    {
+      方向Y:=-2
+    }
+    else
+    {
+      方向Y:=2
+    }
   }
   else if GetKeyState("W", "P") and GetKeyState("S", "P")
   {
