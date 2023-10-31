@@ -11,11 +11,22 @@
 
 Menu, Tray, NoStandard ;不显示默认的AHK右键菜单
 Menu, Tray, Add, 使用教程, 使用教程 ;添加新的右键菜单
+Menu, Tray, Add, 自动切换, 自动切换 ;添加新的右键菜单
 Menu, Tray, Add
 Menu, Tray, Add, 重启软件, 重启软件 ;添加新的右键菜单
 Menu, Tray, Add, 退出软件, 退出软件 ;添加新的右键菜单
 摇杆:=1
 TG:=0
+
+IfExist, %A_ScriptDir%\摇杆设置.ini ;如果配置文件存在则读取
+{
+  IniRead, 自动切换, 摇杆设置.ini, 设置, 自动切换
+}
+else
+{
+  自动切换:=0
+  IniWrite, %自动切换%, 摇杆设置.ini, 设置, 自动切换
+}
 
 PgUp & PgDn::Reload
 重启软件:
@@ -27,6 +38,27 @@ ExitApp
 
 使用教程:
 MsgBox, , 3D摇杆, 黑钨重工出品 免费开源 请勿商用 侵权必究`n更多免费软件教程尽在QQ群 1群763625227 2群643763519`n"快捷打开关闭摇杆功能 Win+S"
+return
+
+自动切换:
+KeyWait, LButton
+loop
+{
+  ToolTip 请在需要自动切换的软件内点击左键以设置
+  if GetKeyState("LButton", "P")
+  {
+    MouseGetPos, , , WinID
+    WinGetClass, 自动切换, ahk_id %WinID%
+    IniWrite, %自动切换%, 摇杆设置.ini, 设置, 自动切换
+    break
+  }
+}
+loop 100
+{
+  ToolTip 自动切换设置完成 %自动切换%
+  Sleep 30
+}
+ToolTip
 return
 
 #s::
@@ -53,6 +85,12 @@ D::
 W::
 S::
 if (TG=1)
+{
+  return
+}
+MouseGetPos, , , WinID
+WinGetClass, WinID, ahk_id %WinID%
+if (WinID!=自动切换) or (WinID=0) or (WinID="")
 {
   return
 }
