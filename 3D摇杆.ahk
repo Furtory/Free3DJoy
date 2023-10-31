@@ -9,10 +9,54 @@
 #MaxHotkeysPerInterval 2000
 #KeyHistory 2000
 
+Menu, Tray, NoStandard ;不显示默认的AHK右键菜单
+Menu, Tray, Add, 使用教程, 使用教程 ;添加新的右键菜单
+Menu, Tray, Add
+Menu, Tray, Add, 重启软件, 重启软件 ;添加新的右键菜单
+Menu, Tray, Add, 退出软件, 退出软件 ;添加新的右键菜单
+摇杆:=1
+TG:=0
+
+PgUp & PgDn::Reload
+重启软件:
+Reload
+
+Home & End::ExitApp
+退出软件:
+ExitApp
+
+使用教程:
+MsgBox, , 3D摇杆, 黑钨重工出品 免费开源 请勿商用 侵权必究`n更多免费软件教程尽在QQ群 1群763625227 2群643763519`n"快捷打开关闭摇杆功能 Win+S"
+return
+
+#s::
+if (摇杆=1)
+{
+  摇杆:=0
+  Hotkey, A, off
+  Hotkey, D, off
+  Hotkey, W, off
+  Hotkey, S, off
+}
+else
+{
+  摇杆:=1
+  Hotkey, A, on
+  Hotkey, D, on
+  Hotkey, W, on
+  Hotkey, S, on
+}
+return
+
 A::
-S::
 D::
 W::
+S::
+if (TG=1)
+{
+  return
+}
+TG:=1
 BlockInput On
 BlockInput, MouseMove
 Send {MButton Down}
@@ -146,6 +190,7 @@ loop
 }
 Send {MButton Up}
 MouseMove, 中键X, 中键Y
+TG:=0
 BlockInput, Off
 BlockInput, MouseMoveOff
 return
