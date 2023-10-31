@@ -69,6 +69,12 @@ if (摇杆=1)
   Hotkey, D, off
   Hotkey, W, off
   Hotkey, S, off
+  loop 50
+  {
+    ToolTip 已关闭摇杆功能
+    Sleep 30
+  }
+  ToolTip
 }
 else
 {
@@ -77,6 +83,25 @@ else
   Hotkey, D, on
   Hotkey, W, on
   Hotkey, S, on
+  loop 50
+  {
+    ToolTip 已打开摇杆功能
+    Sleep 30
+  }
+  ToolTip
+}
+return
+
+检测软件:
+MouseGetPos, , , WinID
+WinGetClass, WinID, ahk_id %WinID%
+if (WinID=自动切换)
+{
+  Hotkey, A, on
+  Hotkey, D, on
+  Hotkey, W, on
+  Hotkey, S, on
+  SetTimer, 检测软件, Delete
 }
 return
 
@@ -92,6 +117,11 @@ MouseGetPos, , , WinID
 WinGetClass, WinID, ahk_id %WinID%
 if (WinID!=自动切换) or (WinID=0) or (WinID="")
 {
+  Hotkey, A, off
+  Hotkey, D, off
+  Hotkey, W, off
+  Hotkey, S, off
+  SetTimer, 检测软件, 300
   return
 }
 TG:=1
