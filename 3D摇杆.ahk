@@ -9,14 +9,33 @@
 #MaxHotkeysPerInterval 2000
 #KeyHistory 2000
 
+Menu, Tray, Icon, %A_ScriptDir%\LOGO.ico
 Menu, Tray, NoStandard ;不显示默认的AHK右键菜单
 Menu, Tray, Add, 使用教程, 使用教程 ;添加新的右键菜单
 Menu, Tray, Add, 自动切换, 自动切换 ;添加新的右键菜单
+Menu, Tray, Add, 开机自启, 开机自启 ;添加新的右键菜单
 Menu, Tray, Add
 Menu, Tray, Add, 重启软件, 重启软件 ;添加新的右键菜单
 Menu, Tray, Add, 退出软件, 退出软件 ;添加新的右键菜单
 摇杆:=1
 TG:=0
+autostartLnk:=A_StartupCommon . "\Free3DJoy.lnk" ;开机启动文件的路径
+IfExist, % autostartLnk ;检查开机启动的文件是否存在
+{
+  FileGetShortcut, %autostartLnk%, lnkTarget ;获取开机启动文件的信息
+  if (lnkTarget!=A_ScriptFullPath) ;如果启动文件执行的路径和当前脚本的完整路径不一致
+  {
+    FileCreateShortcut, %A_ScriptFullPath%, %autostartLnk%, %A_WorkingDir% ;将启动文件执行的路径改成和当前脚本的完整路径一致
+  }
+  
+  autostart:=1
+  Menu, Tray, Check, 开机自启 ;右键菜单打勾
+}
+else
+{
+  autostart:=0
+  Menu, Tray, UnCheck, 开机自启 ;右键菜单不打勾
+}
 
 IfExist, %A_ScriptDir%\摇杆设置.ini ;如果配置文件存在则读取
 {
@@ -38,6 +57,39 @@ ExitApp
 
 使用教程:
 MsgBox, , 3D摇杆, 黑钨重工出品 免费开源 请勿商用 侵权必究`n更多免费软件教程尽在QQ群 1群763625227 2群643763519`n"快捷打开关闭摇杆功能 Win+S"
+return
+
+开机自启: ;模式切换
+Critical, On
+if (autostart=1) ;关闭开机自启动
+{
+  IfExist, % autostartLnk ;如果开机启动的文件存在
+  {
+    FileDelete, %autostartLnk% ;删除开机启动的文件
+  }
+  
+  autostart:=0
+  Menu, Tray, UnCheck, 开机自启 ;右键菜单不打勾
+}
+else ;开启开机自启动
+{
+  IfExist, % autostartLnk ;如果开机启动的文件存在
+  {
+    FileGetShortcut, %autostartLnk%, lnkTarget ;获取开机启动文件的信息
+    if (lnkTarget!=A_ScriptFullPath) ;如果启动文件执行的路径和当前脚本的完整路径不一致
+    {
+      FileCreateShortcut, %A_ScriptFullPath%, %autostartLnk%, %A_WorkingDir% ;将启动文件执行的路径改成和当前脚本的完整路径一致
+    }
+  }
+  else ;如果开机启动的文件不存在
+  {
+    FileCreateShortcut, %A_ScriptFullPath%, %autostartLnk%, %A_WorkingDir% ;创建和当前脚本的完整路径一致的启动文件
+  }
+  
+  autostart:=1
+  Menu, Tray, Check, 开机自启 ;右键菜单打勾
+}
+Critical, Off
 return
 
 自动切换:
