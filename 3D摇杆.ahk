@@ -278,22 +278,22 @@ MouseGetPos, 中键X, 中键Y
 中键计时:=A_TickCount
 幅度:=10
 双击:=0
-if (A_ThisHotkey="A")
+if GetKeyState("A", "P")
 {
   MouseMove, -幅度, 0, 0, R
   MouseMove, 幅度, 0, 0, R
 }
-else if (A_ThisHotkey="D")
+else if GetKeyState("D", "P")
 {
   MouseMove, 幅度, 0, 0, R
   MouseMove, -幅度, 0, 0, R
 }
-else if (A_ThisHotkey="W")
+else if GetKeyState("W", "P")
 {
   MouseMove, 0, -幅度, 0, R
   MouseMove, 0, 幅度, 0, R
 }
-else if (A_ThisHotkey="S")
+else if GetKeyState("S", "P")
 {
   MouseMove, 0, 幅度, 0, R
   MouseMove, 0, =幅度, 0, R
@@ -558,6 +558,18 @@ if !GetKeyState("Q", "P") and !GetKeyState("E", "P")
 }
 MouseMove, A_ScreenWidth/2, 旋转Y, 0
 Send {MButton Down}
+
+if GetKeyState("Q", "P")
+{
+  MouseMove, -幅度, 0, 0, R
+  MouseMove, 幅度, 0, 0, R
+}
+else if GetKeyState("E", "P")
+{
+  MouseMove, 幅度, 0, 0, R
+  MouseMove, -幅度, 0, 0, R
+}
+
 loop
 {
   if GetKeyState("Q", "P") and !GetKeyState("E", "P")
