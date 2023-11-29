@@ -76,6 +76,11 @@ else
   goto 使用教程
 }
 
+MouseXY(x,y) ;【鼠标移动】
+{
+  DllCall("mouse_event",uint,1,int,x,int,y,uint,0,int,0)
+}
+
 PgUp & PgDn::Reload
 重启软件:
 Reload
@@ -246,12 +251,40 @@ return
 
 a::
 d::
+if (TG!=1)
+{
+  loop 5
+  {
+    if GetKeyState("A", "P") and GetKeyState("D", "P")
+    {
+      Send {MButton Down}
+      Send {LButton Down}
+      loop
+      {
+        MouseMove, 0, 2, 0, R
+        
+        DllCall("Winmm\timeBeginPeriod", "UInt", TimePeriod)
+        loop 5
+          DllCall("Sleep", "UInt", SleepDuration)
+        DllCall("Winmm\timeEndPeriod", "UInt", TimePeriod)
+        
+        if !GetKeyState("A", "P") or !GetKeyState("D", "P")
+        {
+          Send {LButton Up}
+          break
+        }
+      }
+    }
+    Sleep 10
+  }
+}
 w::
 s::
 if (TG=1)
 {
   return
 }
+Critical, On
 MouseGetPos, , , WinID
 WinGetClass, WinID, ahk_id %WinID%
 if (WinID!=自动切换) or (WinID=0) or (WinID="")
@@ -269,7 +302,6 @@ if (WinID!=自动切换) or (WinID=0) or (WinID="")
   return
 }
 TG:=1
-缩放:=0
 BlockInput On
 BlockInput, MouseMove
 Send {MButton Down}
@@ -278,23 +310,30 @@ MouseGetPos, 中键X, 中键Y
 中键计时:=A_TickCount
 幅度:=10
 双击:=0
+初次按下:=1
+换向X:=0
+换向Y:=0
 if GetKeyState("A", "P")
 {
+  方向X:=-1
   MouseMove, -幅度, 0, 0, R
   MouseMove, 幅度, 0, 0, R
 }
 else if GetKeyState("D", "P")
 {
+  方向X:=1
   MouseMove, 幅度, 0, 0, R
   MouseMove, -幅度, 0, 0, R
 }
 else if GetKeyState("W", "P")
 {
+  方向Y:=-1
   MouseMove, 0, -幅度, 0, R
   MouseMove, 0, 幅度, 0, R
 }
 else if GetKeyState("S", "P")
 {
+  方向Y:=1
   MouseMove, 0, 幅度, 0, R
   MouseMove, 0, =幅度, 0, R
 }
@@ -303,7 +342,6 @@ loop
 {
   if GetKeyState("A", "P") and !GetKeyState("D", "P")
   {
-    缩放:=0
     if (左右反向=1)
     {
       方向X:=1
@@ -315,7 +353,6 @@ loop
   }
   else if GetKeyState("D", "P") and !GetKeyState("A", "P")
   {
-    缩放:=0
     if (左右反向=1)
     {
       方向X:=-1
@@ -327,27 +364,10 @@ loop
   }
   else if GetKeyState("A", "P") and GetKeyState("D", "P")
   {
-    缩放:=1
-    Send {LButton Down}
-    loop
-    {
-      MouseMove, 0, 2, 0, R
-      
-      DllCall("Winmm\timeBeginPeriod", "UInt", TimePeriod)
-      loop 5
-        DllCall("Sleep", "UInt", SleepDuration)
-      DllCall("Winmm\timeEndPeriod", "UInt", TimePeriod)
-      
-      if !GetKeyState("A", "P") or !GetKeyState("D", "P")
-      {
-        Send {LButton Up}
-        break
-      }
-    }
+    方向X:=0
   }
   else if !GetKeyState("A", "P") and !GetKeyState("D", "P")
   {
-    缩放:=0
     方向X:=0
   }
   
@@ -382,59 +402,29 @@ loop
     方向Y:=0
   }
   
-  中键耗时:=A_TickCount-中键计时
-  if (中键耗时>=4000)
+  if (旧方向X!=方向X) and (A_Index!=1)
   {
-    速度:=3
-    
-    if (方向X<0)
-    {
-      方向X:=方向X-4
-    }
-    else if (方向X>0)
-    {
-      方向X:=方向X+4
-    }
-    
-    if (方向Y<0)
-    {
-      方向Y:=方向Y-4
-    }
-    else if (方向Y>0)
-    {
-      方向Y:=方向Y+4
-    }
+    方向X记录:=方向X
+    换向X:=A_TickCount
   }
-  else if (中键耗时<=1000)
+  if (旧方向Y!=方向Y) and (A_Index!=1)
   {
-    速度:=10-Floor(中键耗时/(1000/10))
+    方向Y记录:=方向Y
+    换向Y:=A_TickCount
+  }
+  
+  中键耗时:=A_TickCount-中键计时
+  if (中键耗时<=1300)
+  {
+    速度:=15-Floor(中键耗时/(1000/10))
   }
   else
   {
-    速度:=15-Floor((中键耗时-1000)/200)
-    if (速度<1)
-    {
-      速度:=1
-    }
-    
-    if (方向X<0)
-    {
-      方向X:=方向X-Floor(中键耗时/1000)
-    }
-    else if (方向X>0)
-    {
-      方向X:=方向X+Floor(中键耗时/1000)
-    }
-    
-    if (方向Y<0)
-    {
-      方向Y:=方向Y-Floor(中键耗时/1000)
-    }
-    else if (方向Y>0)
-    {
-      方向Y:=方向Y+Floor(中键耗时/1000)
-    }
+    速度:=2
   }
+  
+  方向X记录:=方向X
+  方向Y记录:=方向Y
   
   if (双击计时!=0)
   {
@@ -442,7 +432,7 @@ loop
     if (双击检测<250) or (双击=1)
     {
       双击:=1
-      速度:=5
+      速度:=10
       
       if (方向X<0)
       {
@@ -464,9 +454,90 @@ loop
     }
   }
   
-  ; ToolTip %速度% %顺滑度%`n%中键耗时%ms X%方向X% Y%方向Y%
-  if (缩放=0)
-    MouseMove, 方向X, 方向Y, 0, R
+  ; /*
+  if (换向X!=0)
+  {
+    换向X时间:=A_TickCount-换向X
+    if (换向X时间<=1000)
+    {
+      减速度X:=Ceil(5-换向X时间/200)
+      if (方向X<=1) and (方向X>0)
+      {
+        方向X:=1
+      }
+      else if (方向X>-1) and (方向X<0)
+      {
+        方向X:=-1
+      }
+    }
+    else
+    {
+      减速度X:=0
+    }
+  }
+  
+  if (换向Y!=0)
+  {
+    换向Y时间:=A_TickCount-换向Y
+    if (换向Y时间<=1000)
+    {
+      减速度Y:=Ceil(5-换向Y时间/200)
+      if (方向Y<=1) and (方向Y>0)
+      {
+        方向Y:=1
+      }
+      else if (方向Y>-1) and (方向Y<0)
+      {
+        方向Y:=-1
+      }
+    }
+    else
+    {
+      减速度Y:=0
+    }
+  }
+  
+  if (换向X!=0) or (换向Y!=0)
+  {
+    if (减速度X>减速度Y)
+    {
+      速度:=速度+减速度X
+    }
+    else if (减速度X<减速度Y)
+    {
+      速度:=速度+减速度Y
+    }
+  }
+  ; */
+  
+  ; ToolTip %速度% %换向X时间% %换向Y时间%`n%中键耗时%ms X%方向X% Y%方向Y%`n%旧方向X% %旧方向Y%`n%A_TickCount% %换向X% %换向Y%
+  MouseXY(方向X,方向Y) ;【鼠标移动】
+  
+  if (方向X>0)
+  {
+    旧方向X:=1
+  }
+  else if (方向X<0)
+  {
+    旧方向X:=-1
+  }
+  else
+  {
+    旧方向X:=0
+  }
+  
+  if (方向Y>0)
+  {
+    旧方向Y:=1
+  }
+  else if (方向Y<0)
+  {
+    旧方向Y:=-1
+  }
+  else
+  {
+    旧方向Y:=0
+  }
   
   DllCall("Winmm\timeBeginPeriod", "UInt", TimePeriod)
   loop %速度%
@@ -477,6 +548,16 @@ loop
     方向X:=0
     方向Y:=0
     DllCall("Winmm\timeEndPeriod", "UInt", TimePeriod)
+    
+    if (中键耗时<250)
+    {
+      双击计时:=A_TickCount
+    }
+    else
+    {
+      双击计时:=0
+    }
+    
     break
   }
 }
@@ -484,16 +565,8 @@ Send {MButton Up}
 MouseMove, 中键X, 中键Y
 BlockInput, MouseMoveOff
 BlockInput, Off
+Critical, Off
 TG:=0
-
-if (中键耗时<250)
-{
-  双击计时:=A_TickCount
-}
-else
-{
-  双击计时:=0
-}
 return
 
 q::
