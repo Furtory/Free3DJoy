@@ -168,7 +168,7 @@ loop
   if GetKeyState("LButton", "P")
   {
     MouseGetPos, , , WinID
-    WinGetClass, 自动切换, ahk_id %WinID%
+    WinGet, 自动切换, ProcessName, ahk_id %WinID%
     IniWrite, %自动切换%, 摇杆设置.ini, 设置, 自动切换
     break
   }
@@ -236,7 +236,7 @@ return
 
 检测软件:
 MouseGetPos, , , WinID
-WinGetClass, WinID, ahk_id %WinID%
+WinGet, WinID, ProcessName, ahk_id %WinID%
 if (WinID=自动切换)
 {
   Hotkey, A, on
@@ -286,7 +286,7 @@ if (TG=1)
 }
 Critical, On
 MouseGetPos, , , WinID
-WinGetClass, WinID, ahk_id %WinID%
+WinGet, WinID, ProcessName, ahk_id %WinID%
 if (WinID!=自动切换) or (WinID=0) or (WinID="")
 {
   Hotkey, A, off
@@ -576,7 +576,7 @@ if (TG=1)
   return
 }
 MouseGetPos, , , WinID
-WinGetClass, WinID, ahk_id %WinID%
+WinGet, WinID, ProcessName, ahk_id %WinID%
 if (WinID!=自动切换) or (WinID=0) or (WinID="")
 {
   Hotkey, A, off
